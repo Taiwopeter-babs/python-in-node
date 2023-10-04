@@ -16,16 +16,16 @@ def read_write() -> Union[bool, None]:
     If the destination file doesn't exist, create it.
     """
     try:
-        src, dest = sys.argv[1:3]
+        src = sys.argv[1]
     except IndexError:
         return None
 
     # check files extension
-    if src.rsplit('.', 1)[1] != 'txt' or dest.rsplit('.', 1)[1] != 'txt':
+    if src.rsplit('.', 1)[1] != 'txt':
         return None
     try:
         with open(src, "r", encoding='utf-8') as text_file:
-            with open(dest, "w", encoding='utf-8') as dest_file:
+            with open(TARGET_PATH, "w", encoding='utf-8') as dest_file:
                 buffer = [line for line in text_file]
                 dest_file.writelines(buffer)
         return True
@@ -34,7 +34,7 @@ def read_write() -> Union[bool, None]:
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print('Not enough arguments')
     else:
         print(read_write())
