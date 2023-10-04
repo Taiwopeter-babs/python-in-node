@@ -2,14 +2,22 @@
 const { spawn } = require('node:child_process');
 const readline = require('node:readline/promises');
 const { stdin: input, stdout: output } = require('node:process');
-const fs = require('node:fs/promises')
+const fs = require('node:fs/promises');
 
 // Define the commands
-const ls = spawn('python3', ['./read_write.py', 'file.txt'])
+const runScript = spawn('python3', ['./read_write.py', 'file.txt']);
 const rl = readline.createInterface({ input, output });
 
+/**
+ * ### check the output of the python file in stdout
+ * - If `'True'`, then processing continues, otherwise it is stopped.
+ * - If no output, processing is also stopped.
+ * @param {*} dataChunk 
+ * @returns 
+ */
 async function checkFileContent(dataChunk) {
-    if (!dataChunk) {
+    const data = dataChunk.toString('utf-8');
+    if (data === 'False') {
         console.log('Content was not written to target');
         rl.close();
         return;
@@ -18,23 +26,20 @@ async function checkFileContent(dataChunk) {
     const answer = await rl.question('Name of file to save content: ');
     // Function is called recursively if an empty string is given in prompt
     if (answer === '') {
-        console.log('answer cannot be empty. Run command again');
+        console.log('answer cannot be empty. Please enter a filename');
         checkFileContent(dataChunk);
-    }
+    } else {
+        // rename file to user input
+        await fs.rename('target.txt', answer);
+        console.log(`Your file, ${answer}, is now available with content`);
+        rl.close();
 
-    // rename file to user input
-    await fs.rename('target.txt', answer);
-    console.log(`Your file, ${answer}, is now available with content`);
-    rl.close();
-    ls.on('close', (code) => {
-        console.log(`child process exited with code ${code}`);
-    });
-    return;
+        return;
+    }
 }
 
-ls.stdout.on('data', checkFileContent)
+runScript.stdout.on('data', checkFileContent);
 
-ls.stderr.on('data', (data) => {
+runScript.stderr.on('data', (data) => {
     console.log(`stderr: ${data}`);
 });
-
